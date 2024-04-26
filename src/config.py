@@ -48,7 +48,10 @@ listops = {
 
                   "nystrom":{"bz_rate":1,"num_landmarks":128},
                   "linformer":{"bz_rate":1,"linformer_k":128},
-                  "performer":{"bz_rate":1,"rp_dim":128, "kernel_type":"exp"}, 
+                  "performer":{"bz_rate":1,"rp_dim":128, "kernel_type":"relu"}, 
+                  "rnn":{"bz_rate":1,"rp_dim":128, "kernel_type":"rnn"}, 
+                  "linper":{"bz_rate":1,"rp_dim":128, "kernel_type":"relu","linformer_k":128}, 
+                  "linrnn":{"bz_rate":1,"rp_dim":128, "kernel_type":"rnn","linformer_k":128}, 
                   "informer":{"bz_rate":1,"in_nb_features":128},
                   "reformer":{"bz_rate":1,"num_hash":2},
                   "bigbird":{"bz_rate":1,"num_random_blocks":3, "block_size":64},
@@ -94,10 +97,16 @@ pathfinder = {
 
                "nystrom":{"bz_rate":1,"num_landmarks":128},
                "linformer":{"bz_rate":1,"linformer_k":128},
-               "performer":{"bz_rate":1,"rp_dim":128, "kernel_type":"exp"}, #rp_dim = nb_features
+               "performer":{"bz_rate":1,"rp_dim":128, "kernel_type":"relu"}, #rp_dim = nb_features
                "informer":{"bz_rate":2,"in_nb_features":128},
                "bigbird":{"bz_rate":1,"num_random_blocks":3, "block_size":64},
                "reformer":{"bz_rate":1,"num_hash":2},
+               "rnn":{"bz_rate":1,"rp_dim":128, "kernel_type":"rnn"}, 
+                "linper":{"bz_rate":1,"rp_dim":128, "kernel_type":"relu","linformer_k":128}, 
+                "linrnn":{"bz_rate":1,"rp_dim":128, "kernel_type":"rnn","linformer_k":128}, 
+
+                
+
 
            }
        }
@@ -146,10 +155,13 @@ retrieval={
 
                   "nystrom":{"bz_rate":1,"num_landmarks":128},
                   "linformer":{"bz_rate":1,"linformer_k":128},
-                  "performer":{"bz_rate":1,"rp_dim":128, "kernel_type":"exp"}, #rp_dim = nb_features
+                  "performer":{"bz_rate":1,"rp_dim":128, "kernel_type":"relu"}, #rp_dim = nb_features
                   "informer":{"bz_rate":1,"in_nb_features":128},
                   "bigbird":{"bz_rate":1,"num_random_blocks":3, "block_size":64},
                   "reformer":{"bz_rate":1,"num_hash":2},
+                  "rnn":{"bz_rate":1,"rp_dim":128, "kernel_type":"rnn"}, 
+                    "linper":{"bz_rate":1,"rp_dim":128, "kernel_type":"relu","linformer_k":128}, 
+                "linrnn":{"bz_rate":1,"rp_dim":128, "kernel_type":"rnn","linformer_k":128}, 
               }
           }
 text={
@@ -196,7 +208,10 @@ text={
              
              "nystrom":{"bz_rate":1,"num_landmarks":128},
              "linformer":{"bz_rate":1,"linformer_k":128},
-             "performer":{"bz_rate":1,"rp_dim":128, "kernel_type":"exp"}, #rp_dim = nb_features
+            "performer":{"bz_rate":1,"rp_dim":128, "kernel_type":"relu"}, 
+            "linper":{"bz_rate":1,"rp_dim":128, "kernel_type":"relu","linformer_k":128}, 
+            "rnn":{"bz_rate":1,"rp_dim":128, "kernel_type":"rnn"}, 
+            "linrnn":{"bz_rate":1,"rp_dim":128, "kernel_type":"rnn","linformer_k":128}, 
              "informer":{"bz_rate":1,"in_nb_features":128},
              "bigbird":{"bz_rate":1,"num_random_blocks":3, "block_size":64},
              "reformer":{"bz_rate":1,"num_hash":2},
@@ -232,7 +247,7 @@ image={
             "warmup":175,
             "lr_decay":"linear",
             "weight_decay":0,
-            "eval_frequency":50,  
+            "eval_frequency":1000,  
             "num_train_steps":50000, 
             "num_init_steps":0,
             "num_eval_steps":20,
@@ -250,10 +265,13 @@ image={
 
             "nystrom":{"bz_rate":1,"num_landmarks":128},
             "linformer":{"bz_rate":1,"linformer_k":128},
-            "performer":{"bz_rate":1,"rp_dim":128, "kernel_type":"exp"}, #rp_dim = nb_features
+            "performer":{"bz_rate":1,"rp_dim":128, "kernel_type":"relu"}, #rp_dim = nb_features
             "informer":{"bz_rate":2,"in_nb_features":128},
             "bigbird":{"bz_rate":1,"num_random_blocks":3, "block_size":64},
             "reformer":{"bz_rate":1,"num_hash":2},
+            "linper":{"bz_rate":1,"rp_dim":128, "kernel_type":"relu","linformer_k":128}, 
+            "rnn":{"bz_rate":1,"rp_dim":128, "kernel_type":"rnn"}, 
+            "linrnn":{"bz_rate":1,"rp_dim":128, "kernel_type":"rnn","linformer_k":128}, 
         }
 }
 

@@ -6,6 +6,7 @@ import json
 from torch.utils.checkpoint import checkpoint
 
 
+
 def attn_selector(attn_type, config, W_q=None, W_k=None, W_v=None):
 
 
@@ -23,7 +24,7 @@ def attn_selector(attn_type, config, W_q=None, W_k=None, W_v=None):
     elif attn_type.startswith("nystrom"):
         from models.attention_nystrom import NystromAttention
         attn = NystromAttention(config)
-    elif attn_type.startswith("performer"):
+    elif attn_type.startswith("performer") or attn_type.startswith("rnn"):
         from models.attention_performer import PerformerAttention
         attn = PerformerAttention(config)
     elif attn_type.startswith("bigbird"):
@@ -35,6 +36,21 @@ def attn_selector(attn_type, config, W_q=None, W_k=None, W_v=None):
     elif attn_type.startswith("skyformer"):
         from models.attention_skyformer import Skyformer
         attn = Skyformer(config)
+    elif attn_type.startswith("linper") or attn_type.startswith("linrnn"):
+        from models.attention_linper import LinPerAttention
+        attn = LinPerAttention(config)
+    elif attn_type.startswith("eva") or attn_type.startswith("lineva"):
+        from .efficient_attention.eva import EVA    
+        # attn_args = {
+        #     **{
+        #     'dim': config["transformer_dim"], 
+        #     'num_heads': config["num_head"], 
+        #     'qkv_bias': False, 
+        #     'attn_drop': 0., 
+        #     'proj_drop': 0.,
+        #     }
+        # }
+        attn = EVA(dim=config["transformer_dim"],num_heads=config["num_head"],seq_len=config["max_seq_len"])
 
     return attn
 
@@ -115,20 +131,28 @@ class Attention(nn.Module):
         self.grad_checkpointing = (self.attn_type == "softmax")
 
         self.ff = nn.Linear(self.num_head * self.head_dim, self.dim)
+        self.E = None
+        if self.attn_type.startswith("lineva"):
+            self.E = nn.Parameter(torch.Tensor(self.num_head, 128, config["max_seq_len"])).to("cuda:0")
+            torch.nn.init.normal_(self.E, std = 0.02)
 
     def forward(self, X, mask):
 
         if self.attn_type.startswith("longformer") or self.attn_type.startswith("reformer"):
             with torch.cuda.amp.autocast(enabled = False):
-                attn_out = self.attn(X.float(), mask.float())
+                attn_out = self.attn(X.float(), mask.float())   
         else:
             Q = self.split_heads(self.W_q(X))
             K = self.split_heads(self.W_k(X))
             V = self.split_heads(self.W_v(X))
+            if self.attn_type.startswith("lineva"):
+                K = torch.matmul(self.E, K * mask[:, None, :, None])
+                V = torch.matmul(self.E, V * mask[:, None, :, None])
             with torch.cuda.amp.autocast(enabled = False):
                 if self.grad_checkpointing:
                     attn_out = checkpoint(self.attn, Q.float(), K.float(), V.float(), mask.float())
                 else:
+                    # print(mask.shape)
                     attn_out = self.attn(Q.float(), K.float(), V.float(), mask.float())
             attn_out = self.combine_heads(attn_out)
         out = self.ff(attn_out)

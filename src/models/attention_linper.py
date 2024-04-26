@@ -6,7 +6,7 @@ import math
 from models.performer import FastAttention
 
 
-class PerformerAttention(nn.Module):
+class LinPerAttention(nn.Module):
     def __init__(self, config):
         super().__init__()
 
@@ -14,18 +14,27 @@ class PerformerAttention(nn.Module):
         self.rp_dim = config["rp_dim"]
         self.kernel_type = config["kernel_type"]
         if self.kernel_type == "relu":
-            self.attn_fn = FastAttention(dim_heads = self.head_dim, nb_features = self.rp_dim, causal = False, kernel_fn = nn.ReLU(),generalized_attention=True)
+            self.attn_fn = FastAttention(dim_heads = self.head_dim, nb_features = self.rp_dim, causal = False, kernel_fn = nn.ReLU())
         elif self.kernel_type == "exp":
             self.attn_fn = FastAttention(dim_heads = self.head_dim, nb_features = self.rp_dim, causal = False, kernel_fn = torch.exp)
         elif self.kernel_type == "rnn":
             self.attn_fn = FastAttention(dim_heads = self.head_dim, nb_features = self.rp_dim, causal = False, kernel_fn =lambda x : nn.ELU()(x)+1,generalized_attention=True)
-            
+        
+        
+        self.num_head = config["num_head"]
+        self.linformer_k = config["linformer_k"]
+        self.seq_len = config["max_seq_len"]
+        self.device = config['device'] if 'device' in config else 'cuda'
+        self.E = nn.Parameter(torch.Tensor(self.num_head, self.linformer_k, self.seq_len)).to(self.device)
+        torch.nn.init.normal_(self.E, std = 0.02)
 
     def forward(self, Q, K, V, mask):
+        K = torch.matmul(self.E, K * mask[:, None, :, None])# (h,k,l) @ (b,1,n,1)
+        V = torch.matmul(self.E, V * mask[:, None, :, None])
         return self.attn_fn(
             Q / math.sqrt(math.sqrt(self.head_dim)),
-            K / math.sqrt(math.sqrt(self.head_dim)) * mask[:, None, :, None],
-            V * mask[:, None, :, None])
+            K / math.sqrt(math.sqrt(self.head_dim)),
+            V)
 
     def extra_repr(self):
         return f'rp_dim={self.rp_dim}, kernel_type={self.kernel_type}'

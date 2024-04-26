@@ -214,7 +214,7 @@ class FastAttention(nn.Module):
             k = torch.exp(k) if self.causal else k.softmax(dim = -2)
 
         elif self.generalized_attention:
-            create_kernel = partial(generalized_kernel, kernel_fn = self.kernel_fn, projection_matrix = self.projection_matrix, device = device)
+            create_kernel = partial(generalized_kernel, kernel_fn = self.kernel_fn, projection_matrix = None, device = device)
             q, k = map(create_kernel, (q, k))
 
         else:
